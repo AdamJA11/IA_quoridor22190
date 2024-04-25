@@ -4,11 +4,6 @@ import sys
 import time
 import json
 
-import socket
-import sys
-import time
-import json
-
 def subscribe_to_server(server_address, request):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
@@ -36,21 +31,21 @@ def handle_client(client_socket):
             if message_json["request"] == "ping":
                 client_socket.send(json.dumps({"response": "pong"}).encode())
     except Exception as e:
-        print("Une erreur s'est produite lors du traitement du message du client:", e)
+        print("Une erreur s'est produite:", e)
 
 def start_server(server_address):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
             s.bind(server_address)
             s.listen()
-            print("Serveur en attente de connexions...")
-            
+            print("Attente")
+
             while True:
                 client_socket, client_address = s.accept()
-                print("Connexion établie avec:", client_address)
+                print("Connexion avec", client_address)
                 handle_client(client_socket)
         except Exception as e:
-            print("Une erreur s'est produite lors de l'exécution du serveur:", e)
+            print("Une erreur", e)
 
 if __name__ == "__main__":
     server_address = ('localhost', 4000)
