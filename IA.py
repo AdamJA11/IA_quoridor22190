@@ -3,10 +3,10 @@ import socket
 import json
 from collections import deque
 import numpy as np
-q = 0
+q = 2
 n = 1
 p = 1
-
+position = None
 
 
 def subscribe_to_server(server_address, request):
@@ -27,18 +27,27 @@ def subscribe_to_server(server_address, request):
 
 def handle_client(client_socket):
     try:
-        message = client_socket.recv(16600).decode()
+        message = client_socket.recv(16600000).decode()
         if message:
             message_json = json.loads(message)
             if message_json["request"] == "play":
                 a = moveplayer(message_json["state"])
+                #pourri = np.array(message_json["state"]["board"])
+                #print(pourri.shape)
                 
                 client_socket.send(json.dumps(a).encode())
                 
             elif message_json["request"] == "ping":
                 client_socket.send(json.dumps({"response": "pong"}).encode())
     except Exception as e:
-        print("Une erreur s'est produite:", e)
+        print("Une erreur s'est :", e)
+        
+        matrix = np.array(message_json["state"]["board"])
+        print(matrix.shape)
+        if message_json["state"]["current"] == 1 and shortest_path1(matrix)[0] < shortest_path0(matrix)[0] or message_json["state"]["blockers"][1] ==0:
+            client_socket.send(json.dumps({"response": "move","move": {"type": "pawn", "position": [list(shortest_path1(matrix)[1][p])]},"message": "le temps des humains est revolu"}).encode())    
+        else:
+            client_socket.send(json.dumps({"response": "move","move": {"type": "pawn", "position": [list(shortest_path0(matrix)[1][n])]},"message": "le temps des humains est revolu"}).encode())
 
 def start_server(server_address):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -51,51 +60,53 @@ def start_server(server_address):
                 with client_socket:
                     handle_client(client_socket)
         except Exception as e:
-            print("Une erreur", e)
+            print("Une putain d erreur erreur", e)
 def moveplayer(etat):
+    global position
     global q 
     global n 
     global p
     matrix = np.array(etat["board"])
-    if etat["current"] ==0 and shortest_path0(matrix)[0] >= shortest_path1(matrix)[0] and etat["blockers"][0] >0 :
-        for i in shortest_path1(matrix)[1][q:] :
-            matrix[i[0]-1,i[1]] = 4
-            matrix[i[0]-1,i[1]+2] = 4
-            
 
-            if shortest_path1(matrix) != (-1, []):
-                q = q + 1
+    try:
+        
                 
-                return {"response": "move","move": {"type": "blocker", "position":[[i[0]-1,i[1]],[i[0]-1,i[1]+2]] },"message": "le temps des humains est revolu"}
-            break
-    elif etat["current"] ==0 and shortest_path0(matrix)[0] < shortest_path1(matrix)[0] or etat["blockers"][0] ==0 :
-        return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path0(matrix)[1][n])]},"message": "le temps des humains est revolu"}
+                
+        if matrix[shortest_path0(matrix)[1][p][0],shortest_path0(matrix)[1][p][1]] == 1 and etat["current"] ==0  :
+            print(matrix[shortest_path0(matrix)[1][p][0],shortest_path0(matrix)[1][p][1]])
+            return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path0(matrix)[1][q]) ]},"message": "le temps des humains est revolu"}
+
+                
+        elif etat["current"] ==0  :
+            print([list(shortest_path0(matrix)[1][p])])
+            return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path0(matrix)[1][p])]},"message": "le temps des humains est revolu"}
 
 
-       
-
-   
-    
+        
 
     
         
+
         
-    if etat["current"] ==1 and shortest_path0(matrix)[0] <= shortest_path1(matrix)[0] and etat["blockers"][1] >0:
-        for i in shortest_path0(matrix)[1][q:] :
-            matrix[i[0]+1,i[1]] = 4
-            matrix[i[0]+1,i[1]+2] = 4
-            print([[i[0]+1,i[1]],[i[0]+1,i[1]+2]])
             
-
-            if shortest_path0(matrix) != (-1, []):
-                q = q + 1
-                return {"response": "move","move": {"type": "blocker", "position":[[i[0]+1,i[1]],[i[0]+1,i[1]+2]] },"message": "le temps des humains est revolu"}
-            break
-
-    elif etat["current"] == 1 and shortest_path1(matrix)[0] < shortest_path0(matrix)[0] or etat["blockers"][1] ==0:
-        return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path1(matrix)[1][p])]},"message": "le temps des humains est revolu"}    
+            
         
-    
+                
+        elif matrix[shortest_path1(matrix)[1][p][0],shortest_path1(matrix)[1][p][1]] == 0 and etat["current"] ==1:
+            print(matrix[shortest_path1(matrix)[1][p][0],shortest_path1(matrix)[1][p][1]])
+            return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path1(matrix)[1][q]) ]},"message": "le temps des humains est revolu"}
+                
+
+        elif etat["current"] == 1 :
+            print([list(shortest_path1(matrix)[1][p])])
+            return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path1(matrix)[1][p])]},"message": "le temps des humains est revolu"}    
+    except:  
+        print("erreur dans moveplayer")
+        if etat["current"] == 1 and shortest_path1(matrix)[0] < shortest_path0(matrix)[0] or etat["blockers"][1] ==0:
+            return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path1(matrix)[1][p])]},"message": "le temps des humains est revolu"}    
+        else:
+            return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path0(matrix)[1][n])]},"message": "le temps des humains est revolu"}
+            
 
 
     
@@ -237,9 +248,9 @@ if __name__ == "__main__":
     server_address = ('localhost', 4000)
     subscription_request = {
         "request": "subscribe",
-        "port": 4000,
-        "name": "fun_name_for_the_client",
-        "matricules": ["17645", "67560"]
+        "port":4000,
+        "name": "fun_",
+        "matricules": ["12295", "60010"]
     }
     if subscribe_to_server(('localhost', 3000), subscription_request):
         start_server(server_address)
