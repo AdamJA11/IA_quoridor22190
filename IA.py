@@ -69,17 +69,31 @@ def moveplayer(etat):
     matrix = np.array(etat["board"])
 
     try:
-        
-                
-                
-        if matrix[shortest_path0(matrix)[1][p][0],shortest_path0(matrix)[1][p][1]] == 1 and etat["current"] ==0  :
-            print(matrix[shortest_path0(matrix)[1][p][0],shortest_path0(matrix)[1][p][1]])
-            return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path0(matrix)[1][q]) ]},"message": "le temps des humains est revolu"}
+        if shortest_path1(matrix)[1][1][1] == 16 and etat["current"] == 0:
+                matrix[shortest_path1(matrix)[1][1][0] - 1, shortest_path1(matrix)[1][1][1] - 2] = 4
+                matrix[shortest_path1(matrix)[1][1][0] - 1, shortest_path1(matrix)[1][1][1] ] = 4
+                position = [[shortest_path1(matrix)[1][1][0] - 1, shortest_path1(matrix)[1][1][1] - 2,shortest_path1(matrix)[1][1][0] - 1, shortest_path1(matrix)[1][1][1]]]
 
+
+        elif etat["current"] == 0:
+                matrix[shortest_path1(matrix)[1][1][0] - 1, shortest_path1(matrix)[1][1][1] + 2] = 4
+                matrix[shortest_path1(matrix)[1][1][0] - 1, shortest_path1(matrix)[1][1][1] ] = 4
+                position = [[shortest_path1(matrix)[1][1][0] - 1, shortest_path1(matrix)[1][1][1] + 2], [shortest_path1(matrix)[1][1][0] - 1, shortest_path1(matrix)[1][1][1]]]
+        
+        if etat ["current"] == 0 and shortest_path0(matrix)[0] >= shortest_path1(matrix)[0] and etat["blockers"][0] > 0 and shortest_path1(matrix) !=  (-1, []):
+            return  {"response": "move","move": {"type": "blocker", "position": position},"message": "le temps des humains est revolu"}
+
+
+        elif etat["current"] == 0:
                 
-        elif etat["current"] ==0  :
-            print([list(shortest_path0(matrix)[1][p])])
-            return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path0(matrix)[1][p])]},"message": "le temps des humains est revolu"}
+            if matrix[shortest_path0(matrix)[1][p][0],shortest_path0(matrix)[1][p][1]] == 1 and etat["current"] ==0   :
+                print(matrix[shortest_path0(matrix)[1][p][0],shortest_path0(matrix)[1][p][1]])
+                return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path0(matrix)[1][q]) ]},"message": "le temps des humains est revolu"}
+
+                    
+            elif etat["current"] ==0  :
+                print([list(shortest_path0(matrix)[1][p])])
+                return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path0(matrix)[1][p])]},"message": "le temps des humains est revolu"}
 
 
         
@@ -90,22 +104,47 @@ def moveplayer(etat):
         
             
             
-        
-                
-        elif matrix[shortest_path1(matrix)[1][p][0],shortest_path1(matrix)[1][p][1]] == 0 and etat["current"] ==1:
-            print(matrix[shortest_path1(matrix)[1][p][0],shortest_path1(matrix)[1][p][1]])
-            return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path1(matrix)[1][q]) ]},"message": "le temps des humains est revolu"}
-                
+        if shortest_path0 == 16 and etat["current"] == 1:
+            matrix[shortest_path0(matrix)[1][1][0]+1, shortest_path0(matrix)[1][1][1] - 2] = 4
+            matrix[shortest_path0(matrix)[1][1][0]+1, shortest_path0(matrix)[1][1][1] ] = 4
+            position = [[shortest_path0(matrix)[1][1][0]+1, shortest_path0(matrix)[1][1][1] - 2],[shortest_path0(matrix)[1][1][0]+1, shortest_path0(matrix)[1][1][1] ]]
 
         elif etat["current"] == 1 :
-            print([list(shortest_path1(matrix)[1][p])])
-            return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path1(matrix)[1][p])]},"message": "le temps des humains est revolu"}    
-    except:  
-        print("erreur dans moveplayer")
-        if etat["current"] == 1 and shortest_path1(matrix)[0] < shortest_path0(matrix)[0] or etat["blockers"][1] ==0:
-            return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path1(matrix)[1][p])]},"message": "le temps des humains est revolu"}    
-        else:
-            return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path0(matrix)[1][n])]},"message": "le temps des humains est revolu"}
+            matrix[shortest_path0(matrix)[1][1][0]+1, shortest_path0(matrix)[1][1][1] + 2] = 4
+            matrix[shortest_path0(matrix)[1][1][0]+1, shortest_path0(matrix)[1][1][1] ] = 4
+            position = [[shortest_path0(matrix)[1][1][0]+1, shortest_path0(matrix)[1][1][1] + 2],[shortest_path0(matrix)[1][1][0]+1, shortest_path0(matrix)[1][1][1] ]]
+
+        if etat["current"]== 1 and shortest_path0(matrix)[0] <= shortest_path1(matrix)[0] and etat["blockers"][1] > 0 and shortest_path0(matrix) != (-1,[]):
+            return  {"response": "move","move": {"type": "blocker", "position": position},"message": "le temps des humains est revolu"}
+
+        elif etat["current"] == 1:
+                
+            if matrix[shortest_path1(matrix)[1][p][0],shortest_path1(matrix)[1][p][1]] == 0 and etat["current"] ==1:
+                print(matrix[shortest_path1(matrix)[1][p][0],shortest_path1(matrix)[1][p][1]])
+                return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path1(matrix)[1][q]) ]},"message": "le temps des humains est revolu"}
+                    
+
+            elif etat["current"] == 1 :
+                print([list(shortest_path1(matrix)[1][p])])
+                return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path1(matrix)[1][p])]},"message": "le temps des humains est revolu"}    
+    except Exception as e:  
+        print("erreur dans moveplayer", e)
+        if matrix[shortest_path1(matrix)[1][p][0],shortest_path1(matrix)[1][p][1]] == 0 and etat["current"] ==1:
+                print(matrix[shortest_path1(matrix)[1][p][0],shortest_path1(matrix)[1][p][1]])
+                return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path1(matrix)[1][q]) ]},"message": "le temps des humains est revolu"}
+                    
+
+        elif etat["current"] == 1 :
+                print([list(shortest_path1(matrix)[1][p])])
+                return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path1(matrix)[1][p])]},"message": "le temps des humains est revolu"}    
+        if matrix[shortest_path0(matrix)[1][p][0],shortest_path0(matrix)[1][p][1]] == 1 and etat["current"] ==0   :
+                print(matrix[shortest_path0(matrix)[1][p][0],shortest_path0(matrix)[1][p][1]])
+                return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path0(matrix)[1][q]) ]},"message": "le temps des humains est revolu"}
+
+                    
+        elif etat["current"] ==0  :
+                print([list(shortest_path0(matrix)[1][p])])
+                return {"response": "move","move": {"type": "pawn", "position": [list(shortest_path0(matrix)[1][p])]},"message": "le temps des humains est revolu"}
             
 
 
